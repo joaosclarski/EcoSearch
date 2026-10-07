@@ -1,17 +1,19 @@
-import { AlertTriangle, Cog, FlaskConical, Recycle, type LucideIcon } from 'lucide-react';
+import { AlertTriangle, Cog, FlaskConical, Package, Recycle, Trees, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { Categoria, StatusLote, StatusPedido } from '@/lib/data';
 
-export const CATEGORIA_ESTILO: Record<Categoria, { icon: LucideIcon; badge: string; tile: string }> = {
-  Plástico: { icon: Recycle, badge: 'bg-sky-50 text-sky-700 ring-sky-200', tile: 'bg-sky-50 text-sky-600' },
-  Químico: { icon: FlaskConical, badge: 'bg-amber-50 text-amber-800 ring-amber-200', tile: 'bg-amber-50 text-amber-600' },
-  Metal: { icon: Cog, badge: 'bg-slate-100 text-slate-700 ring-slate-300', tile: 'bg-slate-100 text-slate-600' },
+export const CATEGORIA_ESTILO: Record<Categoria, { icon: LucideIcon; badge: string; tile: string; barra: string }> = {
+  'Papelão e Papel': { icon: Package, badge: 'bg-orange-50 text-orange-800 ring-orange-200', tile: 'bg-orange-50 text-orange-600', barra: 'bg-orange-400' },
+  Plásticos: { icon: Recycle, badge: 'bg-sky-50 text-sky-700 ring-sky-200', tile: 'bg-sky-50 text-sky-600', barra: 'bg-sky-500' },
+  'Sucatas e Metais': { icon: Cog, badge: 'bg-slate-100 text-slate-700 ring-slate-300', tile: 'bg-slate-100 text-slate-600', barra: 'bg-slate-500' },
+  Madeira: { icon: Trees, badge: 'bg-lime-50 text-lime-800 ring-lime-200', tile: 'bg-lime-50 text-lime-700', barra: 'bg-lime-600' },
+  'Químicos e Tintas': { icon: FlaskConical, badge: 'bg-violet-50 text-violet-700 ring-violet-200', tile: 'bg-violet-50 text-violet-600', barra: 'bg-violet-500' },
 };
 
 export function CategoriaBadge({ categoria }: { categoria: Categoria }) {
   const { icon: Icon, badge } = CATEGORIA_ESTILO[categoria];
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${badge}`}>
+    <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${badge}`}>
       <Icon className="h-3.5 w-3.5" />
       {categoria}
     </span>

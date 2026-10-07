@@ -1,11 +1,13 @@
 const brlFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-const numFmt = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
+const numFmt = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 });
+const pctFmt = new Intl.NumberFormat('pt-BR', { style: 'percent', maximumFractionDigits: 0 });
 
 const brlCompactoFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 1 });
 
 export const brl = (n: number) => brlFmt.format(n);
 export const brlCompacto = (n: number) => brlCompactoFmt.format(n);
 export const num = (n: number) => numFmt.format(n);
+export const pct = (n: number) => pctFmt.format(n);
 export const ton = (n: number) => `${numFmt.format(n)} t`;
 
 export function dataHora(iso: string) {

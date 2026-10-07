@@ -5,8 +5,9 @@ import { useState } from 'react';
 import { ArrowRight, MapPin, Search, SearchX } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { CATEGORIAS, CATEGORIA_INFO, type Categoria } from '@/lib/data';
-import { brl, ton } from '@/lib/format';
+import { brl, pct, ton } from '@/lib/format';
 import { CATEGORIA_ESTILO, CategoriaBadge, PageHeader, PerigosoBadge } from '@/components/ui';
+import { ComparativoComprador } from '@/components/Economia';
 
 const normalizar = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
@@ -30,6 +31,8 @@ export default function CatalogoPage() {
         title="Catálogo de Resíduos"
         description="Lotes com laudo de caracterização verificado, prontos para compra com MTR e pagamento em custódia."
       />
+
+      <ComparativoComprador className="mb-4" />
 
       <div className="card mb-4 flex flex-col gap-3 p-3 sm:mb-6 md:flex-row md:items-center">
         <div className="relative flex-1">
@@ -101,7 +104,10 @@ export default function CatalogoPage() {
                   </div>
                 </dl>
                 <div className="mt-4 flex items-center justify-between">
-                  <span className="text-lg font-bold tabular-nums text-eco-600">{brl(l.quantidade * l.precoUnidade)}</span>
+                  <span>
+                    <span className="block text-lg font-bold tabular-nums text-eco-600">{brl(l.quantidade * l.precoUnidade)}</span>
+                    <span className="text-xs text-slate-400">~{pct(CATEGORIA_INFO[l.categoria].economiaVirgem)} mais barato que o virgem</span>
+                  </span>
                   <span className="flex items-center gap-1 text-sm font-medium text-navy-600 group-hover:text-eco-600">
                     Ver detalhes <ArrowRight className="h-4 w-4" />
                   </span>

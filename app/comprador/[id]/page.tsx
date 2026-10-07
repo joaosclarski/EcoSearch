@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Building2, FileCheck2, Lock, MapPin, ShieldCheck, ShoppingCart, Truck } from 'lucide-react';
 import { useStore } from '@/lib/store';
-import { CATEGORIA_INFO, calcularValores } from '@/lib/data';
+import { CATEGORIA_INFO, EMPRESA_COMPRADORA, calcularValores, rotaFrete } from '@/lib/data';
+import { ComparativoComprador } from '@/components/Economia';
 import { brl, data, ton } from '@/lib/format';
 import { CATEGORIA_ESTILO, CategoriaBadge, PerigosoBadge, StatusBadge } from '@/components/ui';
 
@@ -120,10 +121,12 @@ export default function DetalheLotePage() {
               {ton(lote.quantidade)} × {brl(lote.precoUnidade)}/t
             </p>
 
+            <ComparativoComprador lote={lote} className="mt-4" />
+
             <ul className="mt-5 space-y-2 border-t border-slate-100 pt-4 text-sm text-slate-600">
               <li className="flex items-center gap-2">
                 <Truck className="h-4 w-4 text-eco-500" />
-                Frete {info.perigoso ? 'carga perigosa' : 'especializado'} estimado: {brl(valores.frete)}
+                Frete local ({rotaFrete(lote, EMPRESA_COMPRADORA)}): {brl(valores.frete)}
               </li>
               <li className="flex items-center gap-2">
                 <FileCheck2 className="h-4 w-4 text-eco-500" /> MTR SINIR emitido no checkout

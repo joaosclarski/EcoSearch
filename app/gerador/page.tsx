@@ -1,16 +1,20 @@
 'use client';
 
 import { useRef, useState, type FormEvent } from 'react';
-import { CheckCircle2, FileCheck2, Lock, Package, Upload, Wallet, X } from 'lucide-react';
+import { CheckCircle2, FileCheck2, Lock, Package, TrendingDown, Upload, Wallet, X } from 'lucide-react';
 import { useStore } from '@/lib/store';
-import { CATEGORIAS, CATEGORIA_INFO, EMPRESA_GERADORA, type Categoria } from '@/lib/data';
-import { brl, data, ton } from '@/lib/format';
+import { CATEGORIAS, CATEGORIA_INFO, EMPRESA_GERADORA, FAIXA_TICKET, FAIXA_VOLUME, envolveEmpresaDemo, impactoPedido, type Categoria } from '@/lib/data';
+import { brl, data, num, ton } from '@/lib/format';
 import { CategoriaBadge, PageHeader, PerigosoBadge, StatTile, StatusBadge } from '@/components/ui';
+import { ComparativoGerador, PlanosPme } from '@/components/Economia';
 
-const VAZIO = { nome: '', categoria: 'Químico' as Categoria, quantidade: '', preco: '', descricao: '' };
+// Valores padrão de um lote PME típico: 2,0 t × R$ 1.250/t = R$ 2.500
+const VAZIO = { nome: '', categoria: 'Papelão e Papel' as Categoria, quantidade: '2', preco: '1250', descricao: '' };
+const LIMITE_LISTA = 8;
 
 export default function GeradorPage() {
-  const { lotes, pedidos, anunciarLote } = useStore();
+  const { lotes, pedidos, anunciarLote, planoPro, setPlanoPro } = useStore();
+  const [verTodos, setVerTodos] = useState(false);
   const [form, setForm] = useState(VAZIO);
   const [laudo, setLaudo] = useState<string | null>(null);
   const [fds, setFds] = useState<string | null>(null);
@@ -25,11 +29,16 @@ export default function GeradorPage() {
   const emEscrow = meusPedidos
     .filter((p) => p.status === 'Pagamento Retido no Escrow')
     .reduce((s, p) => s + p.valores.residuos, 0);
-  const recebido = meusPedidos.filter((p) => p.status === 'Concluído').reduce((s, p) => s + p.valores.residuos, 0);
+  const concluidos = meusPedidos.filter((p) => p.status === 'Concluído');
+  const recebido = concluidos.reduce((s, p) => s + p.valores.residuos, 0);
+  const aterroEvitado = concluidos.reduce((s, p) => s + impactoPedido(p).economiaGerador, 0);
+  const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+  const transacoesMes = pedidos.filter((p) => envolveEmpresaDemo(p) && p.criadoEm >= inicioMes).length;
 
   const perigoso = CATEGORIA_INFO[form.categoria].perigoso;
   const qtd = Number(form.quantidade);
   const preco = Number(form.preco);
+  const foraTicket = qtd > 0 && preco > 0 && (qtd * preco < FAIXA_TICKET[0] || qtd * preco > FAIXA_TICKET[1]);
   const set = (k: keyof typeof VAZIO) => (e: { target: { value: string } }) => setForm({ ...form, [k]: e.target.value });
 
   function enviar(e: FormEvent) {
@@ -71,10 +80,11 @@ export default function GeradorPage() {
         }
       />
 
-      <div className="mb-6 grid grid-cols-1 gap-3 sm:mb-8 sm:gap-4 md:grid-cols-3">
-        <StatTile icon={Package} label="Lotes ativos no catálogo" value={String(ativos.length)} hint={`${ton(ativos.reduce((s, l) => s + l.quantidade, 0))} anunciadas`} />
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:mb-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+        <StatTile icon={Wallet} label="Receita gerada" value={`+${brl(recebido)}`} tone="eco" hint={`${concluidos.length} venda(s) concluída(s)`} />
+        <StatTile icon={TrendingDown} label="Custo com aterro evitado" value={`~${brl(aterroEvitado)}`} tone="eco" hint="Destinação que você deixou de pagar" />
         <StatTile icon={Lock} label="Valores retidos em escrow" value={brl(emEscrow)} hint="Liberados após pesagem no destino" />
-        <StatTile icon={Wallet} label="Receita liberada" value={brl(recebido)} tone="eco" hint="Vendas concluídas" />
+        <StatTile icon={Package} label="Lotes ativos no catálogo" value={String(ativos.length)} hint={`${ton(ativos.reduce((s, l) => s + l.quantidade, 0))} anunciadas · R$ 0/mês`} />
       </div>
 
       <form onSubmit={enviar} className="card p-4 sm:p-6 lg:p-8" noValidate>
@@ -95,7 +105,7 @@ export default function GeradorPage() {
         <div className="mt-5 grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-6">
           <div className="md:col-span-4">
             <label className="label" htmlFor="nome">Nome do material</label>
-            <input id="nome" className="input" placeholder="Ex.: Solvente orgânico usado (acetona/xileno)" value={form.nome} onChange={set('nome')} />
+            <input id="nome" className="input" placeholder="Ex.: Aparas de papelão ondulado" value={form.nome} onChange={set('nome')} />
             <Erro msg={erros.nome} />
           </div>
           <div className="md:col-span-2">
@@ -105,15 +115,17 @@ export default function GeradorPage() {
                 <option key={c}>{c}</option>
               ))}
             </select>
+            <p className="mt-1 text-xs text-slate-400">{CATEGORIA_INFO[form.categoria].exemplos}</p>
           </div>
           <div className="md:col-span-2">
             <label className="label" htmlFor="qtd">Quantidade (toneladas)</label>
-            <input id="qtd" type="number" inputMode="decimal" min="0" step="0.1" className="input" placeholder="10" value={form.quantidade} onChange={set('quantidade')} />
+            <input id="qtd" type="number" inputMode="decimal" min="0" step="0.1" className="input" placeholder="2" value={form.quantidade} onChange={set('quantidade')} />
             <Erro msg={erros.quantidade} />
+            {!erros.quantidade && <p className="mt-1 text-xs text-slate-400">Típico PME: {num(FAIXA_VOLUME[0])} a {num(FAIXA_VOLUME[1])} t</p>}
           </div>
           <div className="md:col-span-2">
             <label className="label" htmlFor="preco">Preço por tonelada (R$)</label>
-            <input id="preco" type="number" inputMode="decimal" min="0" step="0.01" className="input" placeholder="1500,00" value={form.preco} onChange={set('preco')} />
+            <input id="preco" type="number" inputMode="decimal" min="0" step="0.01" className="input" placeholder="1250" value={form.preco} onChange={set('preco')} />
             <Erro msg={erros.preco} />
           </div>
           <div className="md:col-span-2">
@@ -121,6 +133,9 @@ export default function GeradorPage() {
             <div className="flex h-11 items-center rounded-lg md:h-[38px] bg-slate-50 px-3 text-sm font-semibold tabular-nums text-navy-700 ring-1 ring-inset ring-slate-200">
               {qtd > 0 && preco > 0 ? brl(qtd * preco) : '—'}
             </div>
+            <p className={`mt-1 text-xs ${foraTicket ? 'text-amber-700' : 'text-slate-400'}`}>
+              Ticket típico: {brl(FAIXA_TICKET[0])} a {brl(FAIXA_TICKET[1])}
+            </p>
           </div>
           <div className="md:col-span-6">
             <label className="label" htmlFor="desc">Descrição técnica <span className="font-normal text-slate-400">(opcional)</span></label>
@@ -141,6 +156,16 @@ export default function GeradorPage() {
           </div>
         </div>
 
+        {qtd > 0 && preco > 0 && (
+          <div className="mt-5">
+            <p className="mb-2 text-sm font-medium text-slate-700">Comparativo deste lote</p>
+            <ComparativoGerador lote={{ quantidade: qtd, precoUnidade: preco, categoria: form.categoria, gerador: EMPRESA_GERADORA }} />
+            <p className="mt-2 text-xs text-slate-400">
+              Anunciar é gratuito (R$ 0/mês). A taxa de serviços EcoSearch é paga pelo comprador no checkout.
+            </p>
+          </div>
+        )}
+
         <div className="mt-6 flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
             {perigoso && <PerigosoBadge />}
@@ -155,7 +180,7 @@ export default function GeradorPage() {
       <section id="meus-lotes" className="mt-10 scroll-mt-24">
         <h2 className="text-lg font-semibold text-navy-700">Meus Lotes Anunciados</h2>
         <ul className="mt-4 block space-y-3 md:hidden">
-          {meus.map((l) => {
+          {meus.slice(0, verTodos ? undefined : LIMITE_LISTA).map((l) => {
             const pedido = pedidos.find((p) => p.loteId === l.id);
             return (
               <li key={l.id} className="card p-4">
@@ -206,7 +231,7 @@ export default function GeradorPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {meus.map((l) => {
+              {meus.slice(0, verTodos ? undefined : LIMITE_LISTA).map((l) => {
                 const pedido = pedidos.find((p) => p.loteId === l.id);
                 return (
                   <tr key={l.id} className="hover:bg-slate-50/60">
@@ -236,6 +261,16 @@ export default function GeradorPage() {
             </tbody>
           </table>
         </div>
+        {meus.length > LIMITE_LISTA && (
+          <button onClick={() => setVerTodos(!verTodos)} className="btn-secondary mt-3 w-full sm:w-auto">
+            {verTodos ? 'Mostrar menos' : `Ver todos os ${meus.length} lotes`}
+          </button>
+        )}
+      </section>
+
+      <section className="mt-10">
+        <h2 className="mb-4 text-lg font-semibold text-navy-700">Seu plano</h2>
+        <PlanosPme planoPro={planoPro} onAssinar={setPlanoPro} transacoesMes={transacoesMes} />
       </section>
     </div>
   );

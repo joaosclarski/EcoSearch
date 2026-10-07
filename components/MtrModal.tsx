@@ -129,7 +129,7 @@ function Documento({ pedido }: { pedido: Pedido }) {
               <tr>
                 <td className="border border-slate-300 px-2 py-1">{info.codigoIbama}</td>
                 <td className="border border-slate-300 px-2 py-1">{info.descricaoIbama} — {pedido.lote.nome}</td>
-                <td className="border border-slate-300 px-2 py-1">{info.perigoso ? 'I' : info.classe.includes('II A') ? 'II A' : 'II B'}</td>
+                <td className="border border-slate-300 px-2 py-1">{info.classeCurta}</td>
                 <td className="border border-slate-300 px-2 py-1">{info.estadoFisico}</td>
                 <td className="border border-slate-300 px-2 py-1">{info.acondicionamento}</td>
                 <td className="border border-slate-300 px-2 py-1 text-right">{num(pedido.lote.quantidade)}</td>

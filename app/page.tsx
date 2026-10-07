@@ -6,10 +6,11 @@ import { useStore } from '@/lib/store';
 import { impactoPedido } from '@/lib/data';
 import { num } from '@/lib/format';
 import { QrCard } from '@/components/QrAcesso';
+import { PlanosPme } from '@/components/Economia';
 
 const ETAPAS = [
-  { icon: Factory, titulo: 'Anúncio com laudo', texto: 'Gerador publica o lote com laudo de caracterização e FDS/FISPQ.' },
-  { icon: FileText, titulo: 'MTR automático', texto: 'Manifesto de Transporte emitido no padrão SINIR/IBAMA no checkout.' },
+  { icon: Factory, titulo: 'Anúncio grátis', texto: 'A PME publica o lote (papelão, plástico, sucata, madeira) sem mensalidade.' },
+  { icon: FileText, titulo: 'Frete local + MTR', texto: 'Frete na RMC cotado na hora e MTR SINIR/IBAMA emitido no checkout.' },
   { icon: Lock, titulo: 'Pagamento em escrow', texto: 'O valor fica em custódia até a pesagem no destino.' },
   { icon: Scale, titulo: 'Baixa na balança', texto: 'Recebimento confirmado, MTR baixado e saldo liberado.' },
 ];
@@ -28,11 +29,11 @@ export default function Home() {
             <TreePine className="h-3.5 w-3.5" /> {num(desviadas)} t já desviadas de aterros
           </span>
           <h1 className="mt-4 text-2xl font-bold leading-tight tracking-tight sm:text-4xl">
-            O marketplace B2B que transforma resíduo industrial em matéria-prima.
+            Resíduo de PME vira receita — o marketplace B2B de recicláveis da RMC.
           </h1>
           <p className="mt-4 text-navy-100">
-            Conformidade ambiental, logística de carga perigosa e pagamento protegido em um só fluxo — com rastreabilidade
-            de ponta a ponta para o seu relatório ESG.
+            Para comércios, indústrias PMEs e recicladores de Curitiba e São José dos Pinhais. Anuncie grátis, venda com frete
+            local, MTR e pagamento protegido em escrow — com rastreabilidade para o seu relatório ESG.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
             <Link href="/gerador" onClick={() => setPerfil('gerador')} className="btn bg-white text-navy-700 hover:bg-navy-50">
@@ -63,6 +64,12 @@ export default function Home() {
             </li>
           ))}
         </ol>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-semibold text-navy-700">Planos para PMEs</h2>
+        <p className="mb-4 mt-1 text-sm text-slate-500">Sem mensalidade para anunciar: a EcoSearch só ganha quando o negócio acontece.</p>
+        <PlanosPme />
       </section>
 
       <Link href="/esg" className="card group flex items-center justify-between gap-3 p-4 transition sm:p-5 hover:border-eco-300">

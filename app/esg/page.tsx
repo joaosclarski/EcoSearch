@@ -76,11 +76,11 @@ export default function EsgPage() {
           <h2 className="font-semibold text-navy-700">Composição da economia</h2>
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="rounded-lg bg-navy-50 p-4">
-              <p className="text-xs font-medium text-navy-600">Comprador · vs. matéria-prima virgem</p>
+              <p className="text-xs font-medium text-navy-600">Comprador · economia vs. matéria-prima virgem (~40–50%)</p>
               <p className="mt-1 text-2xl font-bold tabular-nums text-navy-700">{brl(total.comprador)}</p>
             </div>
             <div className="rounded-lg bg-eco-50 p-4">
-              <p className="text-xs font-medium text-eco-700">Gerador · custo de aterro/incineração evitado</p>
+              <p className="text-xs font-medium text-eco-700">Gerador · custo com aterro evitado</p>
               <p className="mt-1 text-2xl font-bold tabular-nums text-eco-800">{brl(total.gerador)}</p>
             </div>
           </div>
@@ -93,9 +93,10 @@ export default function EsgPage() {
             </div>
           )}
           <p className="mt-5 text-xs leading-relaxed text-slate-400">
-            Metodologia (simulada): fatores de emissão evitada por tonelada — Plástico {CATEGORIA_INFO.Plástico.fatorCO2}, Químico{' '}
-            {CATEGORIA_INFO.Químico.fatorCO2}, Metal {CATEGORIA_INFO.Metal.fatorCO2} tCO₂e/t. Economia do comprador = preço de referência
-            da matéria-prima virgem − total pago. Economia do gerador = custo médio de destinação final evitado.
+            Metodologia (simulada, premissas PME/RMC): fatores de emissão evitada por tonelada —{' '}
+            {CATEGORIAS.map((c) => `${c} ${num(CATEGORIA_INFO[c].fatorCO2)}`).join(' · ')} tCO₂e/t. Economia do comprador = economia
+            estimada vs. matéria-prima virgem (~40% a 50% conforme a categoria). Economia do gerador = custo de aterro/destinação
+            evitado ({CATEGORIAS.map((c) => `${c} ${brl(CATEGORIA_INFO[c].custoAterro)}/t`).join(' · ')}).
           </p>
         </div>
       </div>

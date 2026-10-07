@@ -18,7 +18,8 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useStore } from '@/lib/store';
-import { CATEGORIA_INFO, TAXA_INTERMEDIACAO, TRANSPORTADORA, type Pedido } from '@/lib/data';
+import { CATEGORIA_INFO, TAXA_INTERMEDIACAO, TAXA_MARGEM_FRETE, TRANSPORTADORA, rotaFrete, type Pedido } from '@/lib/data';
+import { ComparativoComprador } from '@/components/Economia';
 import { brl, dataHora, num, ton } from '@/lib/format';
 import { CategoriaBadge, PerigosoBadge, StatusBadge } from '@/components/ui';
 import MtrModal from '@/components/MtrModal';
@@ -127,6 +128,7 @@ export default function CheckoutPage() {
             </p>
 
             <Resumo pedido={pedido} />
+            <ComparativoComprador lote={pedido.lote} className="mt-4" />
 
             {/* Ações completas a partir de md; no mobile ficam na barra fixa do rodapé */}
             <div className="mt-6 hidden space-y-3 md:block">
@@ -158,7 +160,7 @@ export default function CheckoutPage() {
           <div className="card grid grid-cols-1 gap-4 p-4 sm:grid-cols-3 sm:p-6">
             {[
               ['Gerador (vendedor)', pedido.lote.gerador.nome, pedido.lote.gerador.cidade],
-              ['Transportador', TRANSPORTADORA.nome, info.perigoso ? 'Habilitado para carga perigosa' : 'Frota licenciada'],
+              ['Transportador', TRANSPORTADORA.nome, `Frete local ${rotaFrete(pedido.lote, pedido.comprador)}${info.perigoso ? ' · carga perigosa' : ''}`],
               ['Destinador (comprador)', pedido.comprador.nome, pedido.comprador.cidade],
             ].map(([papel, nome, sub]) => (
               <div key={papel}>
@@ -317,14 +319,28 @@ export default function CheckoutPage() {
 
 function Resumo({ pedido }: { pedido: Pedido }) {
   const { valores } = pedido;
-  const info = CATEGORIA_INFO[pedido.lote.categoria];
   return (
     <dl className="mt-5 space-y-3 text-sm">
-      <Linha rotulo="Valor dos Resíduos" valor={valores.residuos} />
-      <Linha rotulo={info.perigoso ? 'Frete Especializado Carga Perigosa' : 'Frete Especializado'} sub="Simulado" valor={valores.frete} />
-      <Linha rotulo={`Taxa de Intermediação EcoSearch (${TAXA_INTERMEDIACAO * 100}%)`} valor={valores.taxa} />
-      <div className="flex items-center justify-between border-t border-slate-200 pt-3">
-        <dt className="font-semibold text-navy-700">Total</dt>
+      <Linha rotulo="Valor do Material (Gerador)" valor={valores.residuos} />
+      <Linha rotulo="Frete Local Terceirizado" sub={rotaFrete(pedido.lote, pedido.comprador)} valor={valores.frete} />
+      <div>
+        <Linha
+          rotulo={`Taxa de Serviços EcoSearch (${TAXA_INTERMEDIACAO * 100}% Take Rate + ${TAXA_MARGEM_FRETE * 100}% Frete)`}
+          valor={valores.taxa}
+        />
+        <div className="mt-1 space-y-0.5 border-l-2 border-slate-100 pl-3 text-xs text-slate-400">
+          <div className="flex justify-between gap-4">
+            <span>Intermediação {TAXA_INTERMEDIACAO * 100}% sobre o lote</span>
+            <span className="tabular-nums">{brl(valores.taxaIntermediacao)}</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span>Margem de frete {TAXA_MARGEM_FRETE * 100}% sobre a cotação</span>
+            <span className="tabular-nums">{brl(valores.margemFrete)}</span>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center justify-between gap-3 border-t border-slate-200 pt-3">
+        <dt className="font-semibold text-navy-700">Total em Custódia (Escrow)</dt>
         <dd className="text-2xl font-bold tabular-nums text-navy-700">{brl(valores.total)}</dd>
       </div>
     </dl>
@@ -389,7 +405,7 @@ function EscrowCard({ pedido }: { pedido: Pedido }) {
   const repasses = [
     ['Gerador', pedido.lote.gerador.nome, valores.residuos],
     ['Transportador', TRANSPORTADORA.nome, valores.frete],
-    ['EcoSearch', 'Taxa de intermediação', valores.taxa],
+    ['EcoSearch', `Take rate ${brl(valores.taxaIntermediacao)} + margem frete ${brl(valores.margemFrete)}`, valores.taxa],
   ] as const;
 
   const situacao =

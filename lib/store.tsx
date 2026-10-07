@@ -15,10 +15,11 @@ import {
   type Perfil,
 } from './data';
 
-const STORAGE_KEY = 'ecosearch-demo-v2';
+const STORAGE_KEY = 'ecosearch-demo-v3';
 
 interface State {
   perfil: Perfil;
+  planoPro: boolean;
   lotes: Lote[];
   pedidos: Pedido[];
 }
@@ -36,6 +37,7 @@ export interface NovoLote {
 interface Store extends State {
   hydrated: boolean;
   setPerfil: (p: Perfil) => void;
+  setPlanoPro: (ativo: boolean) => void;
   anunciarLote: (dados: NovoLote) => void;
   comprarLote: (loteId: string) => string;
   emitirMtr: (pedidoId: string) => void;
@@ -44,7 +46,7 @@ interface Store extends State {
   resetDemo: () => void;
 }
 
-const inicial = (): State => ({ perfil: 'comprador', lotes: SEED_LOTES, pedidos: SEED_PEDIDOS });
+const inicial = (): State => ({ perfil: 'comprador', planoPro: false, lotes: SEED_LOTES, pedidos: SEED_PEDIDOS });
 
 const StoreContext = createContext<Store | null>(null);
 
@@ -76,6 +78,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     ...state,
     hydrated,
     setPerfil: (perfil) => setState((s) => (s.perfil === perfil ? s : { ...s, perfil })),
+    setPlanoPro: (planoPro) => setState((s) => ({ ...s, planoPro })),
 
     anunciarLote: (dados) =>
       setState((s) => ({
