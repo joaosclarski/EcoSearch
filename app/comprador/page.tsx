@@ -31,7 +31,7 @@ export default function CatalogoPage() {
         description="Lotes com laudo de caracterização verificado, prontos para compra com MTR e pagamento em custódia."
       />
 
-      <div className="card mb-6 flex flex-col gap-3 p-3 md:flex-row md:items-center">
+      <div className="card mb-4 flex flex-col gap-3 p-3 sm:mb-6 md:flex-row md:items-center">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
@@ -42,12 +42,12 @@ export default function CatalogoPage() {
             className="input pl-9"
           />
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="-mx-3 flex gap-2 overflow-x-auto px-3 md:mx-0 md:flex-wrap md:px-0">
           {(['Todas', ...CATEGORIAS] as const).map((c) => (
             <button
               key={c}
               onClick={() => setFiltro(c)}
-              className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
+              className={`chip ${
                 filtro === c ? 'bg-navy-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
@@ -67,14 +67,14 @@ export default function CatalogoPage() {
           <p>Nenhum lote encontrado para os filtros atuais.</p>
         </div>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3">
           {resultado.map((l) => {
             const { icon: Icon, tile } = CATEGORIA_ESTILO[l.categoria];
             return (
               <Link
                 key={l.id}
                 href={`/comprador/${l.id}`}
-                className="card group flex flex-col p-5 transition hover:-translate-y-0.5 hover:border-eco-300 hover:shadow-md"
+                className="card group flex flex-col p-4 transition sm:p-5 hover:-translate-y-0.5 hover:border-eco-300 hover:shadow-md"
               >
                 <div className="flex items-start justify-between gap-3">
                   <span className={`flex h-11 w-11 items-center justify-center rounded-lg ${tile}`}>

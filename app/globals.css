@@ -9,17 +9,21 @@
   .label {
     @apply mb-1.5 block text-sm font-medium text-slate-700;
   }
+  /* text-base no mobile evita o zoom automático do iOS; min-h de 44px para toque */
   .input {
-    @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-eco-500 focus:outline-none focus:ring-2 focus:ring-eco-500/20;
+    @apply block min-h-[44px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base md:min-h-0 md:py-2 md:text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-eco-500 focus:outline-none focus:ring-2 focus:ring-eco-500/20;
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold md:min-h-0 md:py-2.5 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-primary {
     @apply btn bg-navy-700 text-white hover:bg-navy-800 focus-visible:ring-navy-500;
   }
   .btn-eco {
     @apply btn bg-eco-500 text-white hover:bg-eco-600 focus-visible:ring-eco-500;
+  }
+  .chip {
+    @apply inline-flex min-h-[44px] shrink-0 items-center whitespace-nowrap rounded-full px-4 text-sm font-medium transition md:min-h-0 md:px-3 md:py-1.5;
   }
   .btn-secondary {
     @apply btn border border-slate-300 bg-white text-navy-700 hover:bg-slate-50 focus-visible:ring-navy-500;

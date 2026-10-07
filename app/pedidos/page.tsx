@@ -15,7 +15,7 @@ export default function PedidosPage() {
       <PageHeader eyebrow="Visão Comprador" title="Meus Pedidos" description="Acompanhe MTR, custódia e recebimento de cada compra." />
 
       {pedidos.length === 0 ? (
-        <div className="card p-10 text-center text-slate-500">
+        <div className="card p-6 text-center sm:p-10 text-slate-500">
           Nenhum pedido ainda.{' '}
           <Link href="/comprador" className="font-medium text-eco-600 hover:underline">Explorar catálogo</Link>
         </div>
@@ -25,7 +25,7 @@ export default function PedidosPage() {
             <li key={p.id}>
               <Link
                 href={`/checkout/${p.id}`}
-                className="card group flex flex-col gap-4 p-5 transition hover:border-eco-300 sm:flex-row sm:items-center"
+                className="card group flex flex-col gap-3 p-4 transition sm:gap-4 sm:p-5 hover:border-eco-300 sm:flex-row sm:items-center"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -42,7 +42,7 @@ export default function PedidosPage() {
                     {ton(p.lote.quantidade)} · {p.lote.gerador.nome} · {dataHora(p.criadoEm)}
                   </p>
                 </div>
-                <div className="flex items-center gap-4 sm:flex-col sm:items-end sm:gap-1">
+                <div className="flex items-center justify-between gap-4 border-t border-slate-100 pt-3 sm:flex-col sm:items-end sm:gap-1 sm:border-0 sm:pt-0">
                   <StatusBadge status={p.status} />
                   <span className="font-bold tabular-nums text-navy-700">{brl(p.valores.total)}</span>
                 </div>

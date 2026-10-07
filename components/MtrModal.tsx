@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CheckCircle2, Loader2, Printer, X } from 'lucide-react';
+import { CheckCircle2, Loader2, Printer } from 'lucide-react';
+import Sheet from './Sheet';
 import { CATEGORIA_INFO, TRANSPORTADORA, type Empresa, type Pedido } from '@/lib/data';
 import { dataHora, num } from '@/lib/format';
 
@@ -33,57 +34,50 @@ export default function MtrModal({
     return () => clearTimeout(t);
   }, [etapa, pedido.mtr, onEmitir]);
 
-  useEffect(() => {
-    const esc = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', esc);
-    return () => window.removeEventListener('keydown', esc);
-  }, [onClose]);
+  const emitido = !!pedido.mtr;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-navy-900/60 p-4 backdrop-blur-sm sm:items-center">
-      <div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3 print:hidden">
-          <h2 className="font-semibold text-navy-700">Manifesto de Transporte de Resíduos (MTR)</h2>
-          <button onClick={onClose} className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label="Fechar">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        {!pedido.mtr ? (
-          <div className="px-6 py-12">
-            <div className="mx-auto max-w-sm">
-              <Loader2 className="mx-auto h-10 w-10 animate-spin text-eco-500" />
-              <p className="mt-4 text-center font-medium text-navy-700">Emitindo MTR no SINIR/IBAMA</p>
-              <ul className="mt-6 space-y-3">
-                {ETAPAS_EMISSAO.map((txt, i) => (
-                  <li key={txt} className={`flex items-center gap-2 text-sm ${i < etapa ? 'text-eco-700' : i === etapa ? 'text-navy-700' : 'text-slate-300'}`}>
-                    {i < etapa ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <Loader2 className={`h-4 w-4 shrink-0 ${i === etapa ? 'animate-spin' : ''}`} />}
-                    {txt}
-                  </li>
-                ))}
-              </ul>
+    <Sheet
+      titulo="Manifesto de Transporte de Resíduos (MTR)"
+      onClose={onClose}
+      largura="md:max-w-3xl"
+      rodape={
+        emitido && (
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <p className="flex items-center gap-1.5 text-sm text-eco-700">
+              <CheckCircle2 className="h-4 w-4 shrink-0" /> MTR nº {pedido.mtr!.numero} emitido com sucesso
+            </p>
+            <div className="grid grid-cols-2 gap-2 sm:flex">
+              <button onClick={onClose} className="btn-secondary">Fechar</button>
+              <button onClick={() => window.print()} className="btn-primary">
+                <Printer className="h-4 w-4" /> Baixar PDF
+              </button>
             </div>
           </div>
-        ) : (
-          <>
-            <div className="max-h-[70vh] overflow-y-auto bg-slate-100 p-4 sm:p-6 print:max-h-none print:bg-white print:p-0">
-              <Documento pedido={pedido} />
-            </div>
-            <div className="flex flex-col-reverse gap-2 border-t border-slate-200 px-5 py-3 sm:flex-row sm:items-center sm:justify-between print:hidden">
-              <p className="flex items-center gap-1.5 text-sm text-eco-700">
-                <CheckCircle2 className="h-4 w-4" /> MTR nº {pedido.mtr.numero} emitido com sucesso
-              </p>
-              <div className="flex gap-2">
-                <button onClick={onClose} className="btn-secondary">Fechar</button>
-                <button onClick={() => window.print()} className="btn-primary">
-                  <Printer className="h-4 w-4" /> Baixar PDF
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+        )
+      }
+    >
+      {!emitido ? (
+        <div className="px-4 py-10 pb-[calc(2.5rem+env(safe-area-inset-bottom))] sm:px-6 sm:py-12">
+          <div className="mx-auto max-w-sm">
+            <Loader2 className="mx-auto h-10 w-10 animate-spin text-eco-500" />
+            <p className="mt-4 text-center font-medium text-navy-700">Emitindo MTR no SINIR/IBAMA</p>
+            <ul className="mt-6 space-y-3">
+              {ETAPAS_EMISSAO.map((txt, i) => (
+                <li key={txt} className={`flex items-center gap-2 text-sm ${i < etapa ? 'text-eco-700' : i === etapa ? 'text-navy-700' : 'text-slate-300'}`}>
+                  {i < etapa ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <Loader2 className={`h-4 w-4 shrink-0 ${i === etapa ? 'animate-spin' : ''}`} />}
+                  {txt}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-slate-100 p-3 sm:p-6 print:bg-white print:p-0">
+          <Documento pedido={pedido} />
+        </div>
+      )}
+    </Sheet>
   );
 }
 
@@ -92,7 +86,7 @@ function Documento({ pedido }: { pedido: Pedido }) {
   const mtr = pedido.mtr!;
 
   return (
-    <article className="print-area relative mx-auto bg-white p-6 font-mono text-[11px] leading-relaxed text-slate-800 shadow sm:p-8">
+    <article className="print-area relative mx-auto bg-white p-4 font-mono text-[11px] leading-relaxed text-slate-800 shadow sm:p-8">
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
         <span className="-rotate-[25deg] whitespace-nowrap text-4xl font-bold tracking-widest text-red-500/10 sm:text-5xl">
           DOCUMENTO SIMULADO
@@ -114,7 +108,7 @@ function Documento({ pedido }: { pedido: Pedido }) {
         </div>
       </header>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Parte titulo="1. Gerador" empresa={pedido.lote.gerador} />
         <Parte titulo="2. Transportador" empresa={TRANSPORTADORA} extra={info.perigoso ? 'Licença ANTT RNTRC · Motorista MOPP · Placa EKO-2A26' : 'Licença RNTRC · Placa EKO-1B26'} />
         <Parte titulo="3. Destinador" empresa={pedido.comprador} extra={`Tecnologia: ${info.tecnologia}`} />
@@ -147,7 +141,7 @@ function Documento({ pedido }: { pedido: Pedido }) {
         {info.onu && <p className="mt-2 rounded border border-red-200 bg-red-50 px-2 py-1 text-red-700">⚠ Produto perigoso: {info.onu}</p>}
       </section>
 
-      <section className="mt-4 grid gap-3 sm:grid-cols-2">
+      <section className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="border border-slate-300 p-2">
           <p className="text-[10px] uppercase text-slate-500">Documentos vinculados</p>
           <p>Laudo: {pedido.lote.laudo ?? '—'}</p>

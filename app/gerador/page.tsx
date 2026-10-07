@@ -71,13 +71,13 @@ export default function GeradorPage() {
         }
       />
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:mb-8 sm:gap-4 md:grid-cols-3">
         <StatTile icon={Package} label="Lotes ativos no catálogo" value={String(ativos.length)} hint={`${ton(ativos.reduce((s, l) => s + l.quantidade, 0))} anunciadas`} />
         <StatTile icon={Lock} label="Valores retidos em escrow" value={brl(emEscrow)} hint="Liberados após pesagem no destino" />
         <StatTile icon={Wallet} label="Receita liberada" value={brl(recebido)} tone="eco" hint="Vendas concluídas" />
       </div>
 
-      <form onSubmit={enviar} className="card p-6" noValidate>
+      <form onSubmit={enviar} className="card p-4 sm:p-6 lg:p-8" noValidate>
         <h2 className="text-base font-semibold text-navy-700">Dados do lote</h2>
 
         {publicado && (
@@ -86,13 +86,13 @@ export default function GeradorPage() {
             <p className="flex-1">
               <strong>{publicado}</strong> foi publicado no catálogo e já está visível para compradores.
             </p>
-            <button type="button" onClick={() => setPublicado(null)} aria-label="Fechar">
+            <button type="button" onClick={() => setPublicado(null)} aria-label="Fechar" className="-m-2 p-2">
               <X className="h-4 w-4" />
             </button>
           </div>
         )}
 
-        <div className="mt-5 grid gap-5 md:grid-cols-6">
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-6">
           <div className="md:col-span-4">
             <label className="label" htmlFor="nome">Nome do material</label>
             <input id="nome" className="input" placeholder="Ex.: Solvente orgânico usado (acetona/xileno)" value={form.nome} onChange={set('nome')} />
@@ -108,17 +108,17 @@ export default function GeradorPage() {
           </div>
           <div className="md:col-span-2">
             <label className="label" htmlFor="qtd">Quantidade (toneladas)</label>
-            <input id="qtd" type="number" min="0" step="0.1" className="input" placeholder="10" value={form.quantidade} onChange={set('quantidade')} />
+            <input id="qtd" type="number" inputMode="decimal" min="0" step="0.1" className="input" placeholder="10" value={form.quantidade} onChange={set('quantidade')} />
             <Erro msg={erros.quantidade} />
           </div>
           <div className="md:col-span-2">
             <label className="label" htmlFor="preco">Preço por tonelada (R$)</label>
-            <input id="preco" type="number" min="0" step="0.01" className="input" placeholder="1500,00" value={form.preco} onChange={set('preco')} />
+            <input id="preco" type="number" inputMode="decimal" min="0" step="0.01" className="input" placeholder="1500,00" value={form.preco} onChange={set('preco')} />
             <Erro msg={erros.preco} />
           </div>
           <div className="md:col-span-2">
             <span className="label">Valor total do lote</span>
-            <div className="flex h-[38px] items-center rounded-lg bg-slate-50 px-3 text-sm font-semibold tabular-nums text-navy-700 ring-1 ring-inset ring-slate-200">
+            <div className="flex h-11 items-center rounded-lg md:h-[38px] bg-slate-50 px-3 text-sm font-semibold tabular-nums text-navy-700 ring-1 ring-inset ring-slate-200">
               {qtd > 0 && preco > 0 ? brl(qtd * preco) : '—'}
             </div>
           </div>
@@ -146,7 +146,7 @@ export default function GeradorPage() {
             {perigoso && <PerigosoBadge />}
             <span>{CATEGORIA_INFO[form.categoria].classe} · Código IBAMA {CATEGORIA_INFO[form.categoria].codigoIbama}</span>
           </div>
-          <button type="submit" className="btn-eco">
+          <button type="submit" className="btn-eco w-full sm:w-auto">
             <Upload className="h-4 w-4" /> Publicar lote
           </button>
         </div>
@@ -154,8 +154,46 @@ export default function GeradorPage() {
 
       <section id="meus-lotes" className="mt-10 scroll-mt-24">
         <h2 className="text-lg font-semibold text-navy-700">Meus Lotes Anunciados</h2>
-        <div className="card mt-4 overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 text-sm">
+        <ul className="mt-4 block space-y-3 md:hidden">
+          {meus.map((l) => {
+            const pedido = pedidos.find((p) => p.loteId === l.id);
+            return (
+              <li key={l.id} className="card p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold leading-snug text-navy-700">{l.nome}</p>
+                    <p className="mt-0.5 text-xs text-slate-400">{l.id} · {data(l.criadoEm)}</p>
+                  </div>
+                  <StatusBadge status={l.status} />
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  <CategoriaBadge categoria={l.categoria} />
+                  {l.laudo && <DocChip nome="Laudo" />}
+                  {l.fds && <DocChip nome="FDS" />}
+                </div>
+                <dl className="mt-3 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-sm">
+                  <div>
+                    <dt className="text-xs text-slate-400">Quantidade</dt>
+                    <dd className="font-medium tabular-nums">{ton(l.quantidade)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-slate-400">Preço/t</dt>
+                    <dd className="font-medium tabular-nums">{brl(l.precoUnidade)}</dd>
+                  </div>
+                  <div className="text-right">
+                    <dt className="text-xs text-slate-400">Total</dt>
+                    <dd className="font-semibold tabular-nums text-navy-700">{brl(l.quantidade * l.precoUnidade)}</dd>
+                  </div>
+                </dl>
+                {pedido && pedido.status !== 'Concluído' && (
+                  <p className="mt-2 rounded-md bg-slate-50 px-2 py-1 text-xs text-slate-600">Pedido: {pedido.status}</p>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+        <div className="card mt-4 hidden overflow-x-auto md:block">
+          <table className="hidden min-w-full divide-y divide-slate-200 text-sm md:table">
             <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-4 py-3">Lote</th>
@@ -237,7 +275,7 @@ function UploadField({
             <p className="truncate font-medium text-eco-800">{arquivo}</p>
             <p className="text-xs text-eco-600">Upload simulado · validado</p>
           </div>
-          <button type="button" onClick={() => onChange(null)} className="text-eco-700 hover:text-eco-900" aria-label="Remover arquivo">
+          <button type="button" onClick={() => onChange(null)} className="-m-2 p-3 text-eco-700 hover:text-eco-900" aria-label="Remover arquivo">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -245,7 +283,7 @@ function UploadField({
         <button
           type="button"
           onClick={() => ref.current?.click()}
-          className="flex w-full items-center gap-3 rounded-lg border border-dashed border-slate-300 px-3 py-2.5 text-left text-sm transition hover:border-eco-400 hover:bg-eco-50/40"
+          className="flex min-h-[56px] w-full items-center gap-3 rounded-lg border border-dashed border-slate-300 px-4 py-3 text-left text-sm transition hover:border-eco-400 hover:bg-eco-50/40"
         >
           <Upload className="h-5 w-5 shrink-0 text-slate-400" />
           <span>

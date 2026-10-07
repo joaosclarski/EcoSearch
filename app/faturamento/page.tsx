@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { BadgeDollarSign, Download, Hourglass, Lock, Percent, Receipt, Truck, TrendingUp } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { CATEGORIAS, TAXA_INTERMEDIACAO, type Pedido, type StatusPedido } from '@/lib/data';
-import { brl, data, num } from '@/lib/format';
+import { brl, brlCompacto, data, num } from '@/lib/format';
 import { CATEGORIA_ESTILO, CategoriaBadge, PageHeader, StatTile, StatusBadge } from '@/components/ui';
 
 type Periodo = 'mes' | '90d' | 'ano' | 'tudo';
@@ -123,7 +123,7 @@ export default function FaturamentoPage() {
         title="Painel de Faturamento"
         description="Receita de intermediação da plataforma. A taxa é reconhecida como receita quando o recebimento é confirmado na balança e o escrow é liberado."
         actions={
-          <select value={periodo} onChange={(e) => setPeriodo(e.target.value as Periodo)} className="input w-auto" aria-label="Período">
+          <select value={periodo} onChange={(e) => setPeriodo(e.target.value as Periodo)} className="input sm:w-auto" aria-label="Período">
             {PERIODOS.map((p) => (
               <option key={p.id} value={p.id}>{p.label}</option>
             ))}
@@ -131,15 +131,15 @@ export default function FaturamentoPage() {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <StatTile icon={BadgeDollarSign} tone="eco" label="Receita realizada" value={brl(receita)} hint={`${realizados.length} pedido(s) concluído(s)`} />
         <StatTile icon={Lock} label="A receber (em escrow)" value={brl(soma(emEscrow, 'taxa'))} hint={`${emEscrow.length} pedido(s) · posição atual`} />
         <StatTile icon={Hourglass} label="Pipeline (aguardando pagto.)" value={brl(soma(aguardando, 'taxa'))} hint={`${aguardando.length} pedido(s) · posição atual`} />
         <StatTile icon={TrendingUp} label="GMV transacionado" value={brl(gmv)} hint="Valor dos resíduos concluídos" />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <div className="card p-6 lg:col-span-2">
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-6 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="card p-4 sm:p-6 md:col-span-2">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="font-semibold text-navy-700">Receita mensal (últimos 6 meses)</h2>
             {variacao !== null && (
@@ -148,11 +148,11 @@ export default function FaturamentoPage() {
               </span>
             )}
           </div>
-          <div className="mt-6 flex h-56 items-end gap-3 sm:gap-5">
+          <div className="mt-6 flex h-48 items-end gap-2 sm:h-56 sm:gap-5">
             {meses.map((m) => (
               <div key={m.rotulo} className="flex h-full flex-1 flex-col items-center justify-end gap-2">
-                <span className="text-[11px] font-semibold tabular-nums text-navy-700 sm:text-xs">
-                  {m.receita ? brl(m.receita).replace(/,\d{2}$/, '') : '—'}
+                <span className="whitespace-nowrap text-[10px] font-semibold tabular-nums text-navy-700 sm:text-xs">
+                  {m.receita ? brlCompacto(m.receita) : '—'}
                 </span>
                 <div
                   className={`w-full max-w-14 rounded-t-md ${m.atual ? 'bg-eco-500' : 'bg-navy-600'}`}
@@ -166,15 +166,15 @@ export default function FaturamentoPage() {
           <p className="mt-3 text-xs text-slate-400">Mês atual em destaque (parcial).</p>
         </div>
 
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 md:col-span-2 md:grid-cols-3 lg:col-span-1 lg:grid-cols-1">
           <StatTile icon={Percent} label="Take rate efetivo" value={`${num(takeRate * 100)}%`} hint={`Taxa contratual ${TAXA_INTERMEDIACAO * 100}%`} />
           <StatTile icon={Receipt} label="Receita média por pedido" value={brl(ticketMedio)} />
           <StatTile icon={Truck} label="Frete intermediado (repasse)" value={brl(soma(realizados, 'frete'))} hint="Não compõe receita — repassado ao transportador" />
         </div>
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <div className="card p-6">
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-2">
+        <div className="card p-4 sm:p-6 lg:p-8">
           <h2 className="font-semibold text-navy-700">Receita por categoria</h2>
           <ul className="mt-5 space-y-4">
             {porCategoria.map(({ cat, receita: r }) => {
@@ -199,7 +199,7 @@ export default function FaturamentoPage() {
           </ul>
         </div>
 
-        <div className="card p-6">
+        <div className="card p-4 sm:p-6 lg:p-8">
           <h2 className="font-semibold text-navy-700">Top geradores por receita</h2>
           {porGerador.length === 0 ? (
             <p className="mt-5 text-sm text-slate-400">Sem receita no período.</p>
@@ -225,26 +225,71 @@ export default function FaturamentoPage() {
       <section className="mt-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-lg font-semibold text-navy-700">Lançamentos</h2>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0 sm:pb-0">
             {STATUS.map((s) => (
               <button
                 key={s}
                 onClick={() => setFiltroStatus(s)}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                className={`chip text-xs ${
                   filtroStatus === s ? 'bg-navy-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
                 {s === 'Pagamento Retido no Escrow' ? 'Em escrow' : s}
               </button>
             ))}
-            <button onClick={exportarCsv} disabled={!tabela.length} className="btn-secondary px-3 py-1.5 text-xs">
+            <button onClick={exportarCsv} disabled={!tabela.length} className="btn-secondary shrink-0 px-4 text-xs md:px-3 md:py-1.5">
               <Download className="h-3.5 w-3.5" /> Exportar CSV
             </button>
           </div>
         </div>
 
-        <div className="card mt-4 overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 text-sm">
+        <ul className="mt-4 block space-y-3 md:hidden">
+          {tabela.map((p) => (
+            <li key={p.id} className="card p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <Link href={`/checkout/${p.id}`} className="font-semibold leading-snug text-navy-700">{p.lote.nome}</Link>
+                  <p className="mt-0.5 text-xs text-slate-400">{p.id} · {data(dataRef(p).toISOString())}</p>
+                </div>
+                <StatusBadge status={p.status} />
+              </div>
+              <div className="mt-2 space-y-0.5 text-xs text-slate-500">
+                <CategoriaBadge categoria={p.lote.categoria} />
+                <p className="truncate pt-1"><span className="text-slate-400">Gerador:</span> {p.lote.gerador.nome}</p>
+                <p className="truncate"><span className="text-slate-400">Comprador:</span> {p.comprador.nome}</p>
+              </div>
+              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-slate-100 pt-3 text-sm">
+                <div>
+                  <dt className="text-xs text-slate-400">Resíduos</dt>
+                  <dd className="tabular-nums">{brl(p.valores.residuos)}</dd>
+                </div>
+                <div className="text-right">
+                  <dt className="text-xs text-slate-400">Frete</dt>
+                  <dd className="tabular-nums text-slate-500">{brl(p.valores.frete)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-slate-400">Taxa EcoSearch</dt>
+                  <dd className={`font-semibold tabular-nums ${p.status === 'Concluído' ? 'text-eco-700' : 'text-slate-400'}`}>{brl(p.valores.taxa)}</dd>
+                </div>
+                <div className="text-right">
+                  <dt className="text-xs text-slate-400">Total</dt>
+                  <dd className="font-semibold tabular-nums text-navy-700">{brl(p.valores.total)}</dd>
+                </div>
+              </dl>
+            </li>
+          ))}
+          {tabela.length === 0 ? (
+            <li className="card p-6 text-center text-sm text-slate-400">Nenhum lançamento para os filtros atuais.</li>
+          ) : (
+            <li className="rounded-xl bg-navy-700 p-4 text-sm text-white">
+              <div className="flex justify-between"><span>Total ({tabela.length})</span><span className="tabular-nums">{brl(soma(tabela, 'total'))}</span></div>
+              <div className="mt-1 flex justify-between font-semibold text-eco-200"><span>Taxas EcoSearch</span><span className="tabular-nums">{brl(soma(tabela, 'taxa'))}</span></div>
+            </li>
+          )}
+        </ul>
+
+        <div className="card mt-4 hidden overflow-x-auto md:block">
+          <table className="hidden min-w-full divide-y divide-slate-200 text-sm md:table">
             <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-4 py-3">Pedido</th>

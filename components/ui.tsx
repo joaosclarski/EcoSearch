@@ -59,10 +59,10 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mb-5 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
       <div>
         {eyebrow && <p className="text-xs font-semibold uppercase tracking-wider text-eco-600">{eyebrow}</p>}
-        <h1 className="mt-1 text-2xl font-bold tracking-tight text-navy-700 sm:text-3xl">{title}</h1>
+        <h1 className="mt-1 text-xl font-bold tracking-tight text-navy-700 sm:text-3xl">{title}</h1>
         {description && <p className="mt-2 max-w-2xl text-sm text-slate-500">{description}</p>}
       </div>
       {actions}
@@ -84,7 +84,7 @@ export function StatTile({
   tone?: 'navy' | 'eco';
 }) {
   return (
-    <div className="card flex items-start gap-4 p-5">
+    <div className="card flex items-start gap-3 p-4 sm:gap-4 sm:p-5">
       <div
         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
           tone === 'eco' ? 'bg-eco-50 text-eco-600' : 'bg-navy-50 text-navy-600'

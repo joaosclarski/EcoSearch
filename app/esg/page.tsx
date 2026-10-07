@@ -5,7 +5,7 @@ import { Car, CloudOff, PiggyBank, Trash2 } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { CATEGORIAS, CATEGORIA_INFO, envolveEmpresaDemo, impactoPedido } from '@/lib/data';
 import { brl, data, num, ton } from '@/lib/format';
-import { CATEGORIA_ESTILO, CategoriaBadge, PageHeader, StatTile } from '@/components/ui';
+import { CATEGORIA_ESTILO, CategoriaBadge, PageHeader, StatTile, StatusBadge } from '@/components/ui';
 
 const CO2_POR_CARRO_ANO = 4.6; // tCO2e/ano de um carro de passeio médio
 
@@ -41,15 +41,15 @@ export default function EsgPage() {
         description="Indicadores consolidados das transações concluídas (MTR baixado). Dados rastreáveis para relatórios GRI 306 e inventário GHG Protocol."
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
         <StatTile icon={Trash2} tone="eco" label="Toneladas desviadas do aterro" value={ton(total.toneladas)} hint={`${concluidos.length} lote(s) concluído(s)`} />
         <StatTile icon={CloudOff} tone="eco" label="CO₂e evitado" value={`${num(total.co2)} t`} hint="Emissões evitadas vs. matéria-prima virgem" />
         <StatTile icon={PiggyBank} label="Economia obtida" value={brl(total.economia)} hint="Comprador + gerador" />
         <StatTile icon={Car} label="Equivalência" value={`${num(total.co2 / CO2_POR_CARRO_ANO)} carros`} hint="fora de circulação por 1 ano" />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <div className="card p-6">
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-6 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="card p-4 sm:p-6 lg:p-8">
           <h2 className="font-semibold text-navy-700">Toneladas por categoria</h2>
           <ul className="mt-5 space-y-4">
             {porCategoria.map(({ cat, toneladas }) => (
@@ -72,9 +72,9 @@ export default function EsgPage() {
           </ul>
         </div>
 
-        <div className="card p-6 lg:col-span-2">
+        <div className="card p-4 sm:p-6 md:col-span-1 lg:col-span-2">
           <h2 className="font-semibold text-navy-700">Composição da economia</h2>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="rounded-lg bg-navy-50 p-4">
               <p className="text-xs font-medium text-navy-600">Comprador · vs. matéria-prima virgem</p>
               <p className="mt-1 text-2xl font-bold tabular-nums text-navy-700">{brl(total.comprador)}</p>
@@ -103,12 +103,44 @@ export default function EsgPage() {
       <section className="mt-8">
         <h2 className="text-lg font-semibold text-navy-700">Transações rastreadas</h2>
         {concluidos.length === 0 ? (
-          <div className="card mt-4 p-10 text-center text-sm text-slate-500">
+          <div className="card mt-4 p-6 text-center sm:p-10 text-sm text-slate-500">
             Nenhuma transação concluída ainda. Conclua um checkout para ver o impacto aqui.
           </div>
         ) : (
-          <div className="card mt-4 overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-200 text-sm">
+          <>
+          <ul className="mt-4 block space-y-3 md:hidden">
+            {concluidos.map(({ pedido, toneladas, co2, economia }) => (
+              <li key={pedido.id} className="card p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <Link href={`/checkout/${pedido.id}`} className="min-w-0 font-semibold leading-snug text-navy-700">
+                    {pedido.lote.nome}
+                  </Link>
+                  <StatusBadge status={pedido.status} />
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                  <CategoriaBadge categoria={pedido.lote.categoria} />
+                  <span className="font-mono">MTR {pedido.mtr?.numero}</span>
+                  {pedido.recebidoEm && <span>· baixa {data(pedido.recebidoEm)}</span>}
+                </div>
+                <dl className="mt-3 grid grid-cols-3 gap-2 border-t border-slate-100 pt-3 text-sm">
+                  <div>
+                    <dt className="text-xs text-slate-400">Peso</dt>
+                    <dd className="font-medium tabular-nums">{ton(toneladas)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-slate-400">CO₂e evitado</dt>
+                    <dd className="font-medium tabular-nums">{num(co2)} t</dd>
+                  </div>
+                  <div className="text-right">
+                    <dt className="text-xs text-slate-400">Economia</dt>
+                    <dd className="font-semibold tabular-nums text-eco-700">{brl(economia)}</dd>
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ul>
+          <div className="card mt-4 hidden overflow-x-auto md:block">
+            <table className="hidden min-w-full divide-y divide-slate-200 text-sm md:table">
               <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                 <tr>
                   <th className="px-4 py-3">Lote</th>
@@ -140,6 +172,7 @@ export default function EsgPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </section>
     </div>

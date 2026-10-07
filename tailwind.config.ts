@@ -32,6 +32,16 @@ const config: Config = {
           DEFAULT: '#008080',
         },
       },
+      keyframes: {
+        sheet: { from: { transform: 'translateY(100%)' }, to: { transform: 'translateY(0)' } },
+        pop: { from: { opacity: '0', transform: 'scale(.96)' }, to: { opacity: '1', transform: 'scale(1)' } },
+        fade: { from: { opacity: '0' }, to: { opacity: '1' } },
+      },
+      animation: {
+        sheet: 'sheet .3s cubic-bezier(.32,.72,0,1)',
+        pop: 'pop .18s ease-out',
+        fade: 'fade .2s ease-out',
+      },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
       },
